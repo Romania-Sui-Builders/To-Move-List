@@ -40,7 +40,7 @@ export async function createBoard(
     },
   });
 
-  console.log('📋 Board created:');
+  console.log(' Board created:');
   console.log(`   Digest: ${result.digest}`);
   console.log(`   Status: ${result.effects?.status.status}`);
 
@@ -85,7 +85,7 @@ export async function addMember(
     },
   });
 
-  console.log('👤 Member added:');
+  console.log(' Member added:');
   console.log(`   Digest: ${result.digest}`);
   console.log(`   Status: ${result.effects?.status.status}`);
   console.log(`   Member: ${memberAddress}`);
