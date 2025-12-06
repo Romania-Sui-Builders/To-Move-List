@@ -10,6 +10,7 @@ const VERSION: u8 = 1;
 public struct Task has key,  store {
     id: UID,
     version: u8,
+    board_id: ID,
     parent: Option<address>,
     title: String,
     description: Option<String>,
