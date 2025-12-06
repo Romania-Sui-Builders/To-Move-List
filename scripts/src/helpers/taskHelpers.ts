@@ -197,7 +197,7 @@ export async function requestVerification(
 /**
  * Get task details by looking up the task object
  */
-export async function getTaskDetails(boardId: string, taskId: number) {
+export async function getTaskDetails(boardId: string, taskId: number): Promise<any> {
   const board = await suiClient.getObject({
     id: boardId,
     options: {

@@ -40,7 +40,7 @@ describe('E2E Integration Tests', () => {
     }, 30000);
 
     test('should retrieve board details', async () => {
-      const details = await getBoardDetails(boardId);
+      const details: any = await getBoardDetails(boardId);
 
       expect(details).toBeDefined();
       expect(details.name).toBe('Test Board');
@@ -118,7 +118,7 @@ describe('E2E Integration Tests', () => {
   describe('Query Operations', () => {
     test('should retrieve task details', async () => {
       try {
-        const details = await getTaskDetails(boardId, parseInt(taskId));
+        const details: any = await getTaskDetails(boardId, parseInt(taskId));
 
         expect(details).toBeDefined();
         expect(details.title).toBe('Test Task');
@@ -130,7 +130,7 @@ describe('E2E Integration Tests', () => {
     }, 30000);
 
     test('should query board statistics', async () => {
-      const details = await getBoardDetails(boardId);
+      const details: any = await getBoardDetails(boardId);
 
       expect(details.stats).toBeDefined();
       console.log(`   ✓ Board statistics: ${JSON.stringify(details.stats)}`);

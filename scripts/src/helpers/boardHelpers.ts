@@ -97,7 +97,7 @@ export async function addMember(
 /**
  * Get board details
  */
-export async function getBoardDetails(boardId: string) {
+export async function getBoardDetails(boardId: string): Promise<any> {
   const board = await suiClient.getObject({
     id: boardId,
     options: {
@@ -107,7 +107,7 @@ export async function getBoardDetails(boardId: string) {
   });
 
   if (board.data?.content?.dataType === 'moveObject') {
-    return board.data.content.fields;
+    return board.data.content.fields as any;
   }
 
   throw new Error('Board not found or invalid object type');
