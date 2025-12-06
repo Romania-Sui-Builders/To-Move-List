@@ -165,3 +165,43 @@ export function useBoardMemberCap(boardId: string | null) {
     enabled: !!account?.address && !!boardId,
   });
 }
+
+// Hook to fetch active members from Board's Table via dynamic fields
+export function useBoardMembers(boardId: string | null) {
+  const client = useSuiClient();
+
+  return useQuery({
+    queryKey: ['boardMembers', boardId],
+    queryFn: async () => {
+      if (!boardId) return {};
+
+      // First get the board to find the active_members table ID
+      const boardResponse = await client.getObject({
+        id: boardId,
+        options: { showContent: true },
+      });
+
+      const fields = (boardResponse.data?.content as any)?.fields;
+      const tableId = fields?.active_members?.fields?.id?.id;
+      
+      if (!tableId) return {};
+
+      // Query dynamic fields of the table
+      const dynamicFields = await client.getDynamicFields({ parentId: tableId });
+      
+      const members: Record<string, boolean> = {};
+      for (const field of dynamicFields.data) {
+        const fieldData = await client.getDynamicFieldObject({
+          parentId: tableId,
+          name: field.name,
+        });
+        const value = (fieldData.data?.content as any)?.fields?.value;
+        const key = (field.name as any)?.value ?? String(field.name);
+        members[String(key)] = Boolean(value);
+      }
+      
+      return members;
+    },
+    enabled: !!boardId,
+  });
+}

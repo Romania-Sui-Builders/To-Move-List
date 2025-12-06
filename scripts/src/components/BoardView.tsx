@@ -1,10 +1,9 @@
 import { useState } from 'react';
-import { useBoard, useBoardTasks, useBoardAdminCap, useBoardMemberCap } from '../hooks/useBoard';
+import { useBoard, useBoardTasks, useBoardAdminCap, useBoardMemberCap, useBoardMembers } from '../hooks/useBoard';
 import { TaskCard } from './TaskCard';
 import { TaskDetailsModal } from './TaskDetailsModal';
 import { useTransactions } from '../hooks/useTransactions';
 import type { Task } from '../types';
-import { STATUS_LABELS } from '../constants';
 
 interface BoardViewProps {
   boardId: string;
@@ -16,6 +15,7 @@ export function BoardView({ boardId, onBack }: BoardViewProps) {
   const { data: tasks = [], isLoading: tasksLoading, refetch: refetchTasks } = useBoardTasks(boardId);
   const { data: adminCapId, isLoading: adminCapLoading } = useBoardAdminCap(boardId);
   const { data: memberCapId } = useBoardMemberCap(boardId);
+  const { data: members = {}, refetch: refetchMembers } = useBoardMembers(boardId);
   const { addMember, createTask, isPending } = useTransactions();
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
   const [newMember, setNewMember] = useState('');
@@ -51,7 +51,7 @@ export function BoardView({ boardId, onBack }: BoardViewProps) {
     );
   }
 
-  const activeMemberCount = Object.values(board.activeMembers).filter(Boolean).length;
+  const activeMemberCount = Object.values(members).filter(Boolean).length;
 
   return (
     <div className="min-h-screen">
@@ -83,6 +83,7 @@ export function BoardView({ boardId, onBack }: BoardViewProps) {
           onClick={() => {
             refetchTasks();
             refetchBoard();
+            refetchMembers();
           }}
           className="btn-secondary text-sm"
         >
@@ -92,11 +93,11 @@ export function BoardView({ boardId, onBack }: BoardViewProps) {
 
       <div className="card mb-6">
         <h3 className="text-white font-semibold mb-3">Members</h3>
-        {Object.keys(board.activeMembers).length === 0 ? (
+        {Object.keys(members).length === 0 ? (
           <p className="text-sm text-gray-500">No members added yet.</p>
         ) : (
           <div className="flex flex-wrap gap-2">
-            {Object.entries(board.activeMembers).map(([addr, active]) => (
+            {Object.entries(members).map(([addr, active]) => (
               <span
                 key={addr}
                 className={`px-3 py-1 rounded-full text-xs font-mono ${
@@ -138,7 +139,7 @@ export function BoardView({ boardId, onBack }: BoardViewProps) {
                 await addMember(boardId, adminCapId, newMember.trim());
                 setMemberSuccess('Member added.');
                 setNewMember('');
-                await refetchBoard();
+                await refetchMembers();
               } catch (err) {
                 setMemberError(err instanceof Error ? err.message : 'Failed to add member');
               }
