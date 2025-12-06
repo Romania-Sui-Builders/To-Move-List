@@ -2,20 +2,15 @@ module movelist::board;
 
 // Imports
 use movelist::task;
-// use sui::test_scenario;
-// use sui::test_utils::assert_eq;
 use std::string::String;
 
 // Errors
 const EUnauthorized: u64 = 1;
 
-// Versioning
+// Version
 const VERSION: u8 = 1;
 
-// #[test_only]
-// use sui::test_scenario;
-// use sui::test_scenario::Scenario;
-// use sui::test_utils
+// Structures
 
 public struct MemberRole has store {
     role: String,
@@ -39,6 +34,8 @@ public struct BoardMemberCap has key {
     id: UID,
     board_id: ID,
 }
+
+// Mint board
 
 public fun mint_board(
     name: String,
@@ -66,6 +63,19 @@ public fun mint_board(
     transfer::share_object(board);
 }
 
+public fun board_id(cap: &BoardMemberCap): ID {
+    cap.board_id
+}
+
+public fun add_task(
+    _: &BoardMemberCap,
+    board: &mut Board,
+    task_id: ID,
+) {
+    assert!(_.board_id == object::id(board), EUnauthorized);
+    vector::push_back(&mut board.tasks, task_id);
+}
+
 public fun add_member(
     _: &BoardAdminCap,
     board: &mut Board,
@@ -74,31 +84,11 @@ public fun add_member(
 ) {
     assert!(_.board_id == object::id(board), EUnauthorized);
     vector::push_back(&mut board.members, dest);   
-
+    
     let member_cap: BoardMemberCap = BoardMemberCap { 
         id: object::new(ctx), 
         board_id: object::id(board),
     };
-
+    
     transfer::transfer(member_cap, dest);
 }
-
-
-
-
-// #[test]
-// public fun test_create_board_and_become_admin() {
-//     let sender = @0xCAFE;
-//     let name = b"My First Board".to_string();
-
-//     let mut scenario: Scenario = test_scenario::begin(sender);
-//     movelist::board::mint_board(name, scenario.ctx());
-    
-    
-// }
-
-// #[test]
-// public fun test_add_member() {
-//     let test: Scenario = test_scenario::begin(@0xCAFE);
-    
-// }
