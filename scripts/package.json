@@ -5,9 +5,9 @@
   "main": "dist/index.js",
   "scripts": {
     "build": "tsc",
-    "build:css": "pnpm exec tailwindcss -i ./src/styles/tailwind.css -o ./dist/styles/tailwind.css",
-    "build:all": "pnpm run build:css && pnpm run build",
-    "watch:css": "pnpm exec tailwindcss -i ./src/styles/tailwind.css -o ./dist/styles/tailwind.css --watch",
+    "build:css": "npx tailwindcss -i ./src/styles/tailwind.css -o ./dist/styles/tailwind.css",
+    "build:all": "npm run build:css && npm run build",
+    "watch:css": "npx tailwindcss -i ./src/styles/tailwind.css -o ./dist/styles/tailwind.css --watch",
     "dev": "ts-node --esm src/index.ts",
     "test": "jest --verbose",
     "test:watch": "jest --watch",
