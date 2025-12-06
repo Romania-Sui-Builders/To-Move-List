@@ -1,4 +1,5 @@
 import type { Task } from '../types';
+import { STATUS_LABELS, STATUS_COLORS } from '../constants';
 
 interface TaskCardProps {
   task: Task;
@@ -28,7 +29,9 @@ export function TaskCard({ task, onClick }: TaskCardProps) {
           <h4 className="font-semibold text-white leading-tight">{task.title}</h4>
           <p className="text-xs text-gray-500 font-mono truncate">#{task.id}</p>
         </div>
-        <span className="badge badge-todo">Task</span>
+        <span className={`badge ${STATUS_COLORS[task.status] || 'badge-todo'}`}>
+          {STATUS_LABELS[task.status] || 'Task'}
+        </span>
       </div>
 
       {description && (

@@ -2,8 +2,9 @@ export interface Board {
   id: string;
   version: number;
   name: string;
+  description?: string | null;
   owner: string;
-  members: string[];
+  activeMembers: Record<string, boolean>;
   taskIds: string[];
 }
 
@@ -15,5 +16,8 @@ export interface Task {
   title: string;
   description?: string | null;
   dueDate?: number | null;
+  effort?: number | null;
   assignees: string[];
+  status: number;
+  subtasks: string[];
 }

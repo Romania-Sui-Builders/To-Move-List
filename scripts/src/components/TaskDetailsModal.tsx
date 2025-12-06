@@ -1,4 +1,5 @@
 import type { Task } from '../types';
+import { STATUS_LABELS, STATUS_COLORS } from '../constants';
 
 interface TaskDetailsModalProps {
   task: Task;
@@ -34,6 +35,9 @@ export function TaskDetailsModal({ task, onClose }: TaskDetailsModalProps) {
             <p className="text-xs text-gray-500 font-mono truncate">Task ID: {task.id}</p>
             <h2 className="text-xl font-bold text-white">{task.title}</h2>
           </div>
+          <span className={`badge ${STATUS_COLORS[task.status] || 'badge-todo'}`}>
+            {STATUS_LABELS[task.status] || 'Task'}
+          </span>
         </div>
 
         {task.description && (

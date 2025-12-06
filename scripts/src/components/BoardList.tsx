@@ -55,7 +55,7 @@ export function BoardList({ onSelectBoard }: BoardListProps) {
 
 function BoardCard({ board, onClick }: { board: Board; onClick: () => void }) {
   const totalTasks = board.taskIds.length;
-  const memberCount = board.members.length;
+  const memberCount = Object.values(board.activeMembers).filter(Boolean).length;
 
   return (
     <button

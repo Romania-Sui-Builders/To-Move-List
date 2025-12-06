@@ -46,14 +46,16 @@ export async function createBoard(
 
 /**
  * Add a member to a board with a specific role
+ * @param adminCapId - BoardAdminCap object ID for auth
  * @param boardId - The board ID
  * @param memberAddress - Address of the member to add
- * @param adminCapId - BoardAdminCap object ID for auth
+ * @param role - Role: 0 = Contributor, 1 = Administrator
  */
 export async function addMember(
-  boardId: string,
   adminCapId: string,
+  boardId: string,
   memberAddress: string,
+  role: number = 0,
 ): Promise<{ digest: string }> {
   const tx = new Transaction();
 
@@ -63,6 +65,7 @@ export async function addMember(
       tx.object(adminCapId),
       tx.object(boardId),
       tx.pure.address(memberAddress),
+      tx.pure.u8(role),
     ],
   });
 

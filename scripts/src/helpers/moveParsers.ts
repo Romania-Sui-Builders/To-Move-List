@@ -19,13 +19,32 @@ export function parseOption<T>(optionField: any): T | null {
 
 export function parseBoardObject(fields: any, id: string): Board {
   const rawTasks: any[] = (fields.tasks as any[]) || [];
-  const rawMembers: any[] = (fields.members as any[]) || [];
+  
+  // Note: active_members is a Sui Table which requires dynamic field queries to read.
+  // The table ID is stored, but contents must be fetched separately via getDynamicFields.
+  // For now, we can't directly read table contents from object fields.
+  const activeMembersTable = (fields.active_members?.fields?.contents as any[]) || [];
+  const activeMembers: Record<string, boolean> = {};
+  activeMembersTable.forEach((entry: any) => {
+    if (entry.fields?.key) {
+      activeMembers[String(entry.fields.key)] = Boolean(entry.fields.value);
+    }
+  });
+  
+  // Parse description option
+  const descValue = fields.description;
+  let description: string | null = null;
+  if (descValue) {
+    description = descValue.fields?.some ?? descValue.Some ?? descValue.vec?.[0] ?? null;
+  }
+  
   return {
     id,
     version: Number(fields.version || 0),
     name: fields.name || '',
+    description,
     owner: fields.owner || '',
-    members: rawMembers.map((m) => String(m)),
+    activeMembers,
     taskIds: rawTasks.map((t) => String(t)),
   };
 }
@@ -38,6 +57,14 @@ export function parseTaskObject(fields: any, id: string): Task {
     [];
   const rawDue = parseOption<number>(fields.due_date);
   const dueDate = rawDue === null || rawDue === undefined ? null : Number(rawDue);
+  const effort = parseOption<number>(fields.effort_estimation);
+  const statusField = fields.status;
+  const status =
+    statusField?.Backlog !== undefined ? 0 :
+    statusField?.InProgress !== undefined ? 1 :
+    statusField?.InReview !== undefined ? 2 :
+    statusField?.Done !== undefined ? 3 : 0;
+  const subtasks: string[] = (fields.subtasks as any[])?.map((s: any) => String(s)) || [];
 
   return {
     id,
@@ -47,7 +74,10 @@ export function parseTaskObject(fields: any, id: string): Task {
     title: fields.title || '',
     description: parseOption<string>(fields.description),
     dueDate,
+    effort: effort === null || effort === undefined ? null : Number(effort),
     assignees: assignees.map((a: any) => String(a)),
+    status,
+    subtasks,
   };
 }
 

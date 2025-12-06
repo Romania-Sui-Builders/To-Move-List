@@ -1,9 +1,10 @@
 import { useState } from 'react';
-import { useBoard, useBoardTasks, useBoardAdminCap } from '../hooks/useBoard';
+import { useBoard, useBoardTasks, useBoardAdminCap, useBoardMemberCap } from '../hooks/useBoard';
 import { TaskCard } from './TaskCard';
 import { TaskDetailsModal } from './TaskDetailsModal';
 import { useTransactions } from '../hooks/useTransactions';
 import type { Task } from '../types';
+import { STATUS_LABELS } from '../constants';
 
 interface BoardViewProps {
   boardId: string;
@@ -14,11 +15,18 @@ export function BoardView({ boardId, onBack }: BoardViewProps) {
   const { data: board, isLoading: boardLoading, refetch: refetchBoard } = useBoard(boardId);
   const { data: tasks = [], isLoading: tasksLoading, refetch: refetchTasks } = useBoardTasks(boardId);
   const { data: adminCapId, isLoading: adminCapLoading } = useBoardAdminCap(boardId);
-  const { addMember, isPending } = useTransactions();
+  const { data: memberCapId } = useBoardMemberCap(boardId);
+  const { addMember, createTask, isPending } = useTransactions();
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
   const [newMember, setNewMember] = useState('');
   const [memberError, setMemberError] = useState<string | null>(null);
   const [memberSuccess, setMemberSuccess] = useState<string | null>(null);
+  const [newTaskTitle, setNewTaskTitle] = useState('');
+  const [newTaskDesc, setNewTaskDesc] = useState('');
+  const [newTaskEffort, setNewTaskEffort] = useState<number | ''>('');
+  const [newTaskDue, setNewTaskDue] = useState('');
+  const [taskMsg, setTaskMsg] = useState<string | null>(null);
+  const [taskErr, setTaskErr] = useState<string | null>(null);
 
   if (boardLoading) {
     return (
@@ -43,6 +51,8 @@ export function BoardView({ boardId, onBack }: BoardViewProps) {
     );
   }
 
+  const activeMemberCount = Object.values(board.activeMembers).filter(Boolean).length;
+
   return (
     <div className="min-h-screen">
       <div className="flex items-center gap-3 mb-2">
@@ -58,29 +68,42 @@ export function BoardView({ boardId, onBack }: BoardViewProps) {
         <div>
           <h1 className="text-2xl font-bold text-white">{board.name}</h1>
           <p className="text-gray-500 text-sm">Board v{board.version}</p>
+          {board.description && (
+            <p className="text-gray-400 text-xs mt-1">{board.description}</p>
+          )}
         </div>
       </div>
 
       <div className="flex flex-wrap items-center gap-3 mt-4 mb-6">
         <span className="text-xs text-gray-400 font-mono">Owner: {board.owner}</span>
-        <span className="px-2 py-1 rounded-full bg-gray-800 text-gray-200 text-xs">{board.members.length} members</span>
+        <span className="px-2 py-1 rounded-full bg-gray-800 text-gray-200 text-xs">
+          {activeMemberCount} active members
+        </span>
         <button
-          onClick={() => refetchTasks()}
+          onClick={() => {
+            refetchTasks();
+            refetchBoard();
+          }}
           className="btn-secondary text-sm"
         >
-          Refresh tasks
+          Refresh
         </button>
       </div>
 
       <div className="card mb-6">
         <h3 className="text-white font-semibold mb-3">Members</h3>
-        {board.members.length === 0 ? (
+        {Object.keys(board.activeMembers).length === 0 ? (
           <p className="text-sm text-gray-500">No members added yet.</p>
         ) : (
           <div className="flex flex-wrap gap-2">
-            {board.members.map((member) => (
-              <span key={member} className="px-3 py-1 rounded-full bg-gray-800 text-gray-200 text-xs font-mono">
-                {member}
+            {Object.entries(board.activeMembers).map(([addr, active]) => (
+              <span
+                key={addr}
+                className={`px-3 py-1 rounded-full text-xs font-mono ${
+                  active ? 'bg-gray-800 text-gray-200' : 'bg-red-900/40 text-red-200'
+                }`}
+              >
+                {addr} {active ? '' : '(inactive)'}
               </span>
             ))}
           </div>
@@ -150,6 +173,90 @@ export function BoardView({ boardId, onBack }: BoardViewProps) {
         <div className="flex items-center justify-between mb-3">
           <h3 className="text-lg font-semibold text-white">Tasks ({tasks.length})</h3>
           <span className="text-xs text-gray-500">Task IDs stored on-chain in Board.tasks</span>
+        </div>
+
+        <div className="card mb-4">
+          <div className="flex items-center justify-between mb-2">
+            <p className="text-white font-semibold">Create Task</p>
+            <span className="text-xs text-gray-500">
+              {memberCapId ? `MemberCap: ${memberCapId}` : 'Need member cap to create tasks'}
+            </span>
+          </div>
+          <div className="grid gap-3">
+            <input
+              className="input"
+              placeholder="Title"
+              value={newTaskTitle}
+              onChange={(e) => setNewTaskTitle(e.target.value)}
+              disabled={isPending || !memberCapId}
+            />
+            <textarea
+              className="input h-20"
+              placeholder="Description (optional)"
+              value={newTaskDesc}
+              onChange={(e) => setNewTaskDesc(e.target.value)}
+              disabled={isPending || !memberCapId}
+            />
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <input
+                type="date"
+                className="input"
+                value={newTaskDue}
+                onChange={(e) => setNewTaskDue(e.target.value)}
+                disabled={isPending || !memberCapId}
+              />
+              <input
+                type="number"
+                min={0}
+                className="input"
+                placeholder="Effort (optional)"
+                value={newTaskEffort}
+                onChange={(e) => setNewTaskEffort(e.target.value === '' ? '' : Number(e.target.value))}
+                disabled={isPending || !memberCapId}
+              />
+            </div>
+            <div className="flex gap-2">
+              <button
+                className="btn-primary"
+                disabled={isPending || !memberCapId || !newTaskTitle.trim()}
+                onClick={async () => {
+                  if (!memberCapId) return;
+                  setTaskMsg(null);
+                  setTaskErr(null);
+                  try {
+                    const dueMs = newTaskDue ? new Date(newTaskDue).getTime() : undefined;
+                    const effortVal = newTaskEffort === '' ? undefined : Number(newTaskEffort);
+                    await createTask(memberCapId, boardId, newTaskTitle.trim(), newTaskDesc.trim() || undefined, dueMs, effortVal);
+                    setTaskMsg('Task created on-chain.');
+                    setNewTaskTitle('');
+                    setNewTaskDesc('');
+                    setNewTaskEffort('');
+                    setNewTaskDue('');
+                    await refetchTasks();
+                  } catch (err) {
+                    setTaskErr(err instanceof Error ? err.message : 'Failed to create task');
+                  }
+                }}
+              >
+                {isPending ? 'Creating...' : 'Create Task'}
+              </button>
+              <button
+                className="btn-secondary"
+                onClick={() => {
+                  setNewTaskTitle('');
+                  setNewTaskDesc('');
+                  setNewTaskEffort('');
+                  setNewTaskDue('');
+                  setTaskErr(null);
+                  setTaskMsg(null);
+                }}
+              >
+                Reset
+              </button>
+            </div>
+            {taskErr && <p className="text-xs text-red-400">{taskErr}</p>}
+            {taskMsg && <p className="text-xs text-emerald-400">{taskMsg}</p>}
+          </div>
         </div>
 
         {tasksLoading ? (

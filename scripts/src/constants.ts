@@ -10,40 +10,35 @@ const requireEnv = (key: string) => {
 export const PACKAGE_ID = requireEnv('VITE_PACKAGE_ID');
 export const NETWORK = import.meta.env.VITE_SUI_NETWORK || 'testnet';
 
-// Task Status Constants (matching Move contract)
+// Task Status Constants (matching Move contract TaskStatus enum)
 export const STATUS = {
-  TODO: 0,
+  BACKLOG: 0,
   IN_PROGRESS: 1,
-  AWAITING_CHECK: 2,
-  VERIFIED: 3,
-  FAILED: 4,
+  IN_REVIEW: 2,
+  DONE: 3,
 } as const;
 
 export const STATUS_LABELS: Record<number, string> = {
-  [STATUS.TODO]: 'To Do',
+  [STATUS.BACKLOG]: 'Backlog',
   [STATUS.IN_PROGRESS]: 'In Progress',
-  [STATUS.AWAITING_CHECK]: 'Awaiting Check',
-  [STATUS.VERIFIED]: 'Verified',
-  [STATUS.FAILED]: 'Failed',
+  [STATUS.IN_REVIEW]: 'In Review',
+  [STATUS.DONE]: 'Done',
 };
 
 export const STATUS_COLORS: Record<number, string> = {
-  [STATUS.TODO]: 'badge-todo',
+  [STATUS.BACKLOG]: 'badge-todo',
   [STATUS.IN_PROGRESS]: 'badge-in-progress',
-  [STATUS.AWAITING_CHECK]: 'badge-awaiting-check',
-  [STATUS.VERIFIED]: 'badge-verified',
-  [STATUS.FAILED]: 'badge-failed',
+  [STATUS.IN_REVIEW]: 'badge-awaiting-check',
+  [STATUS.DONE]: 'badge-verified',
 };
 
 // Role Constants
 export const ROLE = {
-  NONE: 0,
-  CONTRIBUTOR: 1,
-  ADMIN: 2,
+  CONTRIBUTOR: 0,
+  ADMIN: 1,
 } as const;
 
 export const ROLE_LABELS: Record<number, string> = {
-  [ROLE.NONE]: 'None',
   [ROLE.CONTRIBUTOR]: 'Contributor',
   [ROLE.ADMIN]: 'Admin',
 };

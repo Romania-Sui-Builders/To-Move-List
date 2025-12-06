@@ -136,3 +136,32 @@ export function useBoardAdminCap(boardId: string | null) {
     enabled: !!account?.address && !!boardId,
   });
 }
+
+// Hook to fetch the member cap ID for the current user for a specific board
+export function useBoardMemberCap(boardId: string | null) {
+  const client = useSuiClient();
+  const account = useCurrentAccount();
+
+  return useQuery({
+    queryKey: ['boardMemberCap', account?.address, boardId],
+    queryFn: async () => {
+      if (!account?.address || !boardId) return null;
+
+      const response = await client.getOwnedObjects({
+        owner: account.address,
+        filter: {
+          StructType: `${import.meta.env.VITE_PACKAGE_ID || '0x0'}::board::BoardMemberCap`,
+        },
+        options: { showContent: true },
+      });
+
+      const match = response.data.find((obj) => {
+        const fields = (obj.data?.content as any)?.fields;
+        return fields?.board_id === boardId;
+      });
+
+      return match?.data?.objectId ?? null;
+    },
+    enabled: !!account?.address && !!boardId,
+  });
+}

@@ -10,6 +10,7 @@ export function CreateBoardModal({ onClose }: CreateBoardModalProps) {
   
   const [name, setName] = useState('');
   const [error, setError] = useState<string | null>(null);
+  const [description, setDescription] = useState('');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -21,7 +22,7 @@ export function CreateBoardModal({ onClose }: CreateBoardModalProps) {
     }
 
     try {
-      await createBoard(name.trim());
+      await createBoard(name.trim(), description.trim() || null);
       onClose();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to create board');
@@ -55,6 +56,18 @@ export function CreateBoardModal({ onClose }: CreateBoardModalProps) {
               className="input w-full"
               placeholder="My Project Board"
               autoFocus
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-300 mb-2">
+              Description (optional)
+            </label>
+            <textarea
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              className="input w-full h-24 resize-none"
+              placeholder="Describe your board..."
             />
           </div>
 
