@@ -13,7 +13,7 @@ export function useTransactions() {
       arguments: [tx.pure.string(name)],
     });
 
-    const result = await signAndExecute({ transaction: tx });
+    const result = await signAndExecute({ transaction: tx as any });
     return result;
   };
 
@@ -29,7 +29,7 @@ export function useTransactions() {
       ],
     });
 
-    const result = await signAndExecute({ transaction: tx });
+    const result = await signAndExecute({ transaction: tx as any });
     return result;
   };
 

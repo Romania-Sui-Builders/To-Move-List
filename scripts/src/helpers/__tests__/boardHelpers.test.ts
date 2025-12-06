@@ -2,7 +2,7 @@ import { describe, test, expect, beforeEach, jest } from '@jest/globals';
 import { createBoard, addMember } from '../boardHelpers';
 import { suiClient } from '../../suiClient';
 
-const mockSignAndExecute = suiClient.signAndExecuteTransaction as jest.Mock;
+const mockSignAndExecute: any = suiClient.signAndExecuteTransaction as any;
 
 jest.mock('../../env', () => ({
   config: {
@@ -56,13 +56,13 @@ describe('boardHelpers', () => {
       objectChanges: [
         { type: 'created', objectType: '0xpkg::board::Board', objectId: '0xboard' },
       ],
-    });
+    } as any);
 
     const result = await createBoard('Test Board');
 
     expect(result.boardId).toBe('0xboard');
     expect(mockSignAndExecute).toHaveBeenCalledTimes(1);
-    const txArg = mockSignAndExecute.mock.calls[0][0].transaction;
+    const txArg = (mockSignAndExecute.mock.calls[0][0] as any).transaction;
     expect(txArg.calls[0].target).toBe('0xpkg::board::mint_board');
     expect(txArg.calls[0].arguments[0]).toEqual({ kind: 'string', value: 'Test Board' });
   });
@@ -71,12 +71,12 @@ describe('boardHelpers', () => {
     mockSignAndExecute.mockResolvedValue({
       digest: '0x2',
       effects: { status: { status: 'success' } },
-    });
+    } as any);
 
     await addMember('0xboard', '0xcap', '0xmember');
 
     expect(mockSignAndExecute).toHaveBeenCalledTimes(1);
-    const txArg = mockSignAndExecute.mock.calls[0][0].transaction;
+    const txArg = (mockSignAndExecute.mock.calls[0][0] as any).transaction;
     expect(txArg.calls[0].target).toBe('0xpkg::board::add_member');
     expect(txArg.calls[0].arguments[0]).toEqual({ kind: 'object', value: '0xcap' });
     expect(txArg.calls[0].arguments[1]).toEqual({ kind: 'object', value: '0xboard' });

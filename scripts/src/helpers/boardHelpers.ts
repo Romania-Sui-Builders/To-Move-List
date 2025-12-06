@@ -103,18 +103,3 @@ export async function getBoardDetails(boardId: string): Promise<any> {
   throw new Error('Board not found or invalid object type');
 }
 
-/**
- * Helper function to extract created object ID by type
- */
-function extractCreatedObjectId(
-  result: any,
-  objectType: string
-): string | undefined {
-  const objectChanges = result.objectChanges || [];
-  for (const change of objectChanges) {
-    if (change.type === 'created' && change.objectType?.includes(objectType)) {
-      return change.objectId;
-    }
-  }
-  return undefined;
-}

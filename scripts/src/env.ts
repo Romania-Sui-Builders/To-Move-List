@@ -11,12 +11,6 @@ const requiredEnvVars = [
   'USER_SECRET_KEY',
 ] as const;
 
-const optionalEnvVars = [
-  'BOARD_REGISTRY_ID',
-  'ADMIN_ADDRESS',
-  'SUI_RPC_URL',
-] as const;
-
 // Check for required variables
 for (const envVar of requiredEnvVars) {
   if (!process.env[envVar]) {
