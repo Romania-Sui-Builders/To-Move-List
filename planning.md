@@ -4,6 +4,215 @@ This is a fully specified build guide for agentic AIs or a 5-person team to deli
 
 ---
 
+## 🚀 VPS Deployment Status - tomovelist.iseethereaper.com
+
+### Completed Deployment Steps ✅
+
+**1. DNS Configuration**
+- ✅ Domain: `iseethereaper.com` → A record: `89.44.137.22`
+- ✅ Subdomain: `tomovelist.iseethereaper.com` → A record: `89.44.137.22`
+
+**2. VPS Preparation**
+- ✅ VPS IP: `89.44.137.22`
+- ✅ Root SSH access configured
+- ✅ Nginx installed (`apt install -y nginx`)
+- ✅ Default folder structure restored
+
+**3. Nginx Reverse Proxy**
+- ✅ Config created: `/etc/nginx/sites-available/tomovelist.iseethereaper.com`
+- ✅ Proxy pass to `http://127.0.0.1:3000`
+- ✅ Symlink enabled in `/etc/nginx/sites-enabled/`
+- ✅ Nginx tested and reloaded
+
+**4. SSL Certificate (HTTPS)**
+- ✅ Certbot installed (`apt install -y certbot python3-certbot-nginx`)
+- ✅ Certificate issued for `tomovelist.iseethereaper.com`
+- ✅ HTTPS fully functional
+- ✅ Auto-renewal scheduled
+
+**5. GitHub Deploy Key**
+- ✅ SSH keypair generated (`ssh-keygen -t ed25519`)
+- ✅ Public key added to GitHub (Romania-Sui-Builders)
+- ✅ Authentication verified (`ssh -T git@github.com`)
+
+**6. Repository Cloned**
+- ✅ Project directory: `/var/www/tomovelist`
+- ✅ Repository cloned via SSH: `git@github.com:Romania-Sui-Builders/To-Move-List.git`
+
+**7. Node.js Environment**
+- ✅ Node + npm installed (`apt install -y nodejs npm`)
+
+### Pending Deployment Steps ⏳
+
+**8. Pull Latest Changes**
+```bash
+cd /var/www/tomovelist
+git pull origin frontend
+```
+
+**9. Install Dependencies**
+```bash
+cd /var/www/tomovelist/scripts
+npm install
+```
+
+**10. Configure Environment Variables**
+```bash
+cd /var/www/tomovelist/scripts
+nano .env
+```
+Add the following:
+```env
+VITE_PACKAGE_ID=0x1
+VITE_SUI_NETWORK=testnet
+```
+(Will update `VITE_PACKAGE_ID` after deploying Move contract)
+
+**11. Build React Application**
+```bash
+cd /var/www/tomovelist/scripts
+npm run build
+```
+This creates a `dist/` folder with production-ready static files.
+
+**12. Install Serve (Static File Server)**
+```bash
+npm install -g serve
+```
+
+**13. Test the Build Locally**
+```bash
+serve -s dist -l 3000
+```
+Visit `http://89.44.137.22:3000` to verify. Press Ctrl+C to stop.
+
+**14. Create Systemd Service**
+```bash
+nano /etc/systemd/system/tomovelist.service
+```
+
+Add this content:
+```ini
+[Unit]
+Description=To-Move-List React App
+After=network.target
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory=/var/www/tomovelist/scripts/dist
+ExecStart=/usr/bin/npx serve -s . -l 3000
+Restart=always
+RestartSec=10
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=tomovelist
+
+[Install]
+WantedBy=multi-user.target
+```
+
+**15. Enable and Start Service**
+```bash
+systemctl daemon-reload
+systemctl enable tomovelist
+systemctl start tomovelist
+systemctl status tomovelist
+```
+
+**16. Verify Deployment**
+- Visit: `https://tomovelist.iseethereaper.com`
+- Should see the React app with wallet connect button
+
+**17. Deploy Move Contract (Optional - for full functionality)**
+
+First, install Sui CLI on VPS:
+```bash
+cargo install --locked --git https://github.com/MystenLabs/sui.git --branch mainnet sui
+```
+
+Or download binary:
+```bash
+wget https://github.com/MystenLabs/sui/releases/latest/download/sui-ubuntu-x86_64.tgz
+tar -xzf sui-ubuntu-x86_64.tgz
+mv sui /usr/local/bin/
+```
+
+Setup Sui wallet:
+```bash
+sui client
+# Follow prompts to create new address or import existing
+sui client switch --env testnet
+sui client faucet  # Get testnet tokens
+```
+
+Build and publish:
+```bash
+cd /var/www/tomovelist/move/board
+sui move build
+sui client publish --gas-budget 100000000
+```
+
+Copy the `Package ID` from output and update `.env`:
+```bash
+cd /var/www/tomovelist/scripts
+nano .env
+# Update VITE_PACKAGE_ID=<your-package-id>
+```
+
+Rebuild and restart:
+```bash
+npm run build
+systemctl restart tomovelist
+```
+
+**18. Monitoring and Logs**
+```bash
+# View logs
+journalctl -u tomovelist -f
+
+# Check status
+systemctl status tomovelist
+
+# Restart if needed
+systemctl restart tomovelist
+```
+
+**19. Future Updates**
+```bash
+cd /var/www/tomovelist
+git pull origin frontend
+cd scripts
+npm install
+npm run build
+systemctl restart tomovelist
+```
+
+---
+
+## ✅ TypeScript Integration Scripts - COMPLETED
+
+The `/scripts` directory is now fully set up with:
+
+- ✅ TypeScript integration layer with Sui SDK
+- ✅ Helper functions for board and task operations
+- ✅ E2E integration tests
+- ✅ Environment configuration and validation
+- ✅ React + Vite frontend with Tailwind CSS
+- ✅ Notion-style kanban board UI
+- ✅ dApp Kit wallet integration
+- ✅ Clean documentation (README.md)
+
+**Folder Status:**
+- ✅ `/scripts` - React frontend (Vite + dApp Kit + Tailwind)
+- ✅ `/scripts/src/components` - BoardList, BoardView, TaskCard, Modals, Analytics
+- ✅ `/scripts/src/hooks` - useBoard, useTransactions
+- ✅ `/scripts/trello-clone` - Original Trello clone template (not yet integrated)
+- ✅ `/move/board` - Move smart contracts
+- ⏳ VPS deployment in progress
+
+---
+
 ## 1. Product Scope
 
 ### 1.1 Elevator Summary

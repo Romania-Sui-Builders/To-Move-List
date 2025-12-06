@@ -1,0 +1,97 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-[#191919] text-white antialiased;
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply bg-sui-blue hover:bg-sui-blue-dark text-white font-medium py-2 px-4 rounded-lg transition-colors duration-200;
+  }
+
+  .btn-secondary {
+    @apply bg-gray-700 hover:bg-gray-600 text-white font-medium py-2 px-4 rounded-lg transition-colors duration-200;
+  }
+
+  .btn-ghost {
+    @apply hover:bg-gray-800 text-gray-300 hover:text-white font-medium py-2 px-4 rounded-lg transition-colors duration-200;
+  }
+
+  .card {
+    @apply bg-[#252525] rounded-lg p-4 shadow-lg;
+  }
+
+  .input {
+    @apply bg-[#2f2f2f] border border-gray-700 rounded-lg px-4 py-2 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-sui-blue focus:border-transparent;
+  }
+
+  /* Notion-style status tags */
+  .tag {
+    @apply inline-flex items-center px-2 py-0.5 rounded text-xs font-medium;
+  }
+
+  .tag-todo {
+    @apply bg-blue-500/20 text-blue-400;
+  }
+
+  .tag-in-progress {
+    @apply bg-yellow-500/20 text-yellow-400;
+  }
+
+  .tag-awaiting-check {
+    @apply bg-purple-500/20 text-purple-400;
+  }
+
+  .tag-verified {
+    @apply bg-green-500/20 text-green-400;
+  }
+
+  .tag-failed {
+    @apply bg-red-500/20 text-red-400;
+  }
+
+  /* Notion-style column */
+  .column {
+    @apply min-w-[280px] flex-1;
+  }
+
+  .column-header {
+    @apply flex items-center gap-2 mb-3 px-1;
+  }
+
+  .column-tag {
+    @apply px-2 py-1 rounded text-sm font-medium;
+  }
+
+  .task-card {
+    @apply bg-[#2f2f2f] rounded-lg p-3 mb-2 hover:bg-[#363636] transition-colors cursor-pointer border-l-4;
+  }
+
+  .badge {
+    @apply inline-flex items-center px-2 py-1 rounded-full text-xs font-semibold;
+  }
+
+  .badge-todo {
+    @apply bg-gray-800 text-gray-200;
+  }
+
+  .badge-in-progress {
+    @apply bg-amber-500/20 text-amber-300;
+  }
+
+  .badge-awaiting-check {
+    @apply bg-purple-500/20 text-purple-200;
+  }
+
+  .badge-verified {
+    @apply bg-emerald-500/20 text-emerald-200;
+  }
+
+  .badge-failed {
+    @apply bg-red-500/20 text-red-200;
+  }
+}
