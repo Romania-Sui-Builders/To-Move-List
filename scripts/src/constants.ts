@@ -1,5 +1,13 @@
-// Network and Package Configuration
-export const PACKAGE_ID = import.meta.env.VITE_PACKAGE_ID || '0x1'; // Will be updated after contract deployment
+// Network and Package Configuration (required)
+const requireEnv = (key: string) => {
+  const val = import.meta.env[key];
+  if (!val) {
+    throw new Error(`Missing ${key} in environment. Please set it in your .env/.env.local.`);
+  }
+  return val as string;
+};
+
+export const PACKAGE_ID = requireEnv('VITE_PACKAGE_ID');
 export const NETWORK = import.meta.env.VITE_SUI_NETWORK || 'testnet';
 
 // Task Status Constants (matching Move contract)
