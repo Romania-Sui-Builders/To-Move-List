@@ -1,25 +1,7 @@
 import { useSuiClient, useCurrentAccount } from '@mysten/dapp-kit';
 import { useQuery } from '@tanstack/react-query';
-import type { Board, Task, BoardStats } from '../types';
-
-// Parse board fields from Move object
-function parseBoardFields(fields: any): Omit<Board, 'id'> {
-  return {
-    name: fields.name || '',
-    description: fields.description || '',
-    owner: fields.owner || '',
-    verifier: fields.verifier || '',
-    projectWeight: Number(fields.project_weight || 0),
-    stats: {
-      todo: Number(fields.stats?.fields?.todo || 0),
-      inProgress: Number(fields.stats?.fields?.in_prog || 0),
-      awaitingCheck: Number(fields.stats?.fields?.await_check || 0),
-      verified: Number(fields.stats?.fields?.verified || 0),
-      failed: Number(fields.stats?.fields?.failed || 0),
-      overdue: Number(fields.stats?.fields?.overdue || 0),
-    },
-  };
-}
+import type { Board, Task } from '../types';
+import { parseBoardObject, parseTaskObject } from '../helpers/moveParsers';
 
 // Hook to fetch a single board
 export function useBoard(boardId: string | null) {
@@ -29,7 +11,7 @@ export function useBoard(boardId: string | null) {
     queryKey: ['board', boardId],
     queryFn: async () => {
       if (!boardId) return null;
-      
+
       const response = await client.getObject({
         id: boardId,
         options: { showContent: true, showOwner: true },
@@ -40,16 +22,13 @@ export function useBoard(boardId: string | null) {
       }
 
       const fields = response.data.content.fields as any;
-      return {
-        id: boardId,
-        ...parseBoardFields(fields),
-      } as Board;
+      return parseBoardObject(fields, boardId);
     },
     enabled: !!boardId,
   });
 }
 
-// Hook to fetch boards owned by current user
+// Hook to fetch boards via owned admin caps
 export function useUserBoards() {
   const client = useSuiClient();
   const account = useCurrentAccount();
@@ -59,32 +38,41 @@ export function useUserBoards() {
     queryFn: async () => {
       if (!account?.address) return [];
 
-      // Query owned objects that match Board type
-      const response = await client.getOwnedObjects({
+      // Find admin caps owned by the user to locate boards
+      const capResponse = await client.getOwnedObjects({
         owner: account.address,
         filter: {
           MatchAll: [
-            { StructType: `${import.meta.env.VITE_PACKAGE_ID || '0x0'}::board::Board` },
+            { StructType: `${import.meta.env.VITE_PACKAGE_ID || '0x0'}::board::BoardAdminCap` },
           ],
         },
         options: { showContent: true },
       });
 
-      return response.data
-        .filter((obj) => obj.data?.content?.dataType === 'moveObject')
+      const boardIds: string[] = capResponse.data
         .map((obj) => {
-          const fields = (obj.data!.content as any).fields;
-          return {
-            id: obj.data!.objectId,
-            ...parseBoardFields(fields),
-          } as Board;
-        });
+          const fields = (obj.data?.content as any)?.fields;
+          return fields?.board_id as string | undefined;
+        })
+        .filter(Boolean) as string[];
+
+      if (!boardIds.length) return [];
+
+      const boards = await Promise.all(
+        boardIds.map(async (id) => {
+          const boardResp = await client.getObject({ id, options: { showContent: true } });
+          if (boardResp.data?.content?.dataType !== 'moveObject') return null;
+          return parseBoardObject(boardResp.data.content.fields as any, id);
+        })
+      );
+
+      return boards.filter(Boolean) as Board[];
     },
     enabled: !!account?.address,
   });
 }
 
-// Hook to fetch tasks for a board
+// Hook to fetch tasks for a board by following task IDs
 export function useBoardTasks(boardId: string | null) {
   const client = useSuiClient();
 
@@ -93,7 +81,6 @@ export function useBoardTasks(boardId: string | null) {
     queryFn: async () => {
       if (!boardId) return [];
 
-      // Get the board to access its tasks table
       const boardResponse = await client.getObject({
         id: boardId,
         options: { showContent: true },
@@ -104,98 +91,48 @@ export function useBoardTasks(boardId: string | null) {
       }
 
       const fields = boardResponse.data.content.fields as any;
-      const tasksTableId = fields.tasks?.fields?.id?.id;
+      const taskIds: string[] = (fields.tasks as string[]) || [];
+      if (!taskIds.length) return [];
 
-      if (!tasksTableId) return [];
+      const tasks = await Promise.all(
+        taskIds.map(async (taskId) => {
+          const taskResp = await client.getObject({ id: taskId, options: { showContent: true } });
+          if (taskResp.data?.content?.dataType !== 'moveObject') return null;
+          return parseTaskObject(taskResp.data.content.fields as any, taskId);
+        })
+      );
 
-      // Get dynamic fields (tasks) from the table
-      const dynamicFields = await client.getDynamicFields({
-        parentId: tasksTableId,
-      });
-
-      const tasks: Task[] = [];
-
-      for (const field of dynamicFields.data) {
-        const taskResponse = await client.getDynamicFieldObject({
-          parentId: tasksTableId,
-          name: field.name,
-        });
-
-        if (taskResponse.data?.content?.dataType === 'moveObject') {
-          const taskFields = (taskResponse.data.content as any).fields.value?.fields;
-          if (taskFields) {
-            tasks.push({
-              id: taskResponse.data.objectId,
-              taskIndex: Number(field.name.value),
-              title: taskFields.title || '',
-              descriptionCipher: taskFields.description_cipher || [],
-              category: Number(taskFields.category || 0),
-              status: Number(taskFields.status || 0),
-              weightPct: Number(taskFields.weight_pct || 0),
-              assignees: taskFields.assignees || [],
-              dueTsMs: Number(taskFields.due_ts_ms || 0),
-              parentId: taskFields.parent_id?.Some ?? null,
-              commitHash: taskFields.commit_hash || [],
-              proofHash: taskFields.proof_hash || [],
-              createdAtMs: Number(taskFields.created_at_ms || 0),
-              updatedAtMs: Number(taskFields.updated_at_ms || 0),
-            });
-          }
-        }
-      }
-
-      return tasks;
+      return tasks.filter(Boolean) as Task[];
     },
     enabled: !!boardId,
   });
 }
 
-// Hook to fetch board members
-export function useBoardMembers(boardId: string | null) {
+// Hook to fetch the admin cap ID for the current user for a specific board
+export function useBoardAdminCap(boardId: string | null) {
   const client = useSuiClient();
+  const account = useCurrentAccount();
 
   return useQuery({
-    queryKey: ['boardMembers', boardId],
+    queryKey: ['boardAdminCap', account?.address, boardId],
     queryFn: async () => {
-      if (!boardId) return [];
+      if (!account?.address || !boardId) return null;
 
-      const boardResponse = await client.getObject({
-        id: boardId,
+      const response = await client.getOwnedObjects({
+        owner: account.address,
+        filter: {
+          StructType: `${import.meta.env.VITE_PACKAGE_ID || '0x0'}::board::BoardAdminCap`,
+        },
         options: { showContent: true },
       });
 
-      if (boardResponse.data?.content?.dataType !== 'moveObject') {
-        throw new Error('Invalid board');
-      }
-
-      const fields = boardResponse.data.content.fields as any;
-      const membersTableId = fields.members?.fields?.id?.id;
-
-      if (!membersTableId) return [];
-
-      const dynamicFields = await client.getDynamicFields({
-        parentId: membersTableId,
+      const match = response.data.find((obj) => {
+        const fields = (obj.data?.content as any)?.fields;
+        return fields?.board_id === boardId;
       });
 
-      const members = [];
-
-      for (const field of dynamicFields.data) {
-        const memberResponse = await client.getDynamicFieldObject({
-          parentId: membersTableId,
-          name: field.name,
-        });
-
-        if (memberResponse.data?.content?.dataType === 'moveObject') {
-          const memberFields = (memberResponse.data.content as any).fields;
-          members.push({
-            address: String(field.name.value),
-            role: Number(memberFields.value || 0),
-          });
-        }
-      }
-
-      return members;
+      return match?.data?.objectId ?? null;
     },
-    enabled: !!boardId,
+    enabled: !!account?.address && !!boardId,
   });
 }

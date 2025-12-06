@@ -1,5 +1,5 @@
 // Network and Package Configuration
-export const PACKAGE_ID = import.meta.env.VITE_PACKAGE_ID || '0x...';
+export const PACKAGE_ID = import.meta.env.VITE_PACKAGE_ID || '0x1'; // Will be updated after contract deployment
 export const NETWORK = import.meta.env.VITE_SUI_NETWORK || 'testnet';
 
 // Task Status Constants (matching Move contract)

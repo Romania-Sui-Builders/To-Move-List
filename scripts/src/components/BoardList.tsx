@@ -54,16 +54,8 @@ export function BoardList({ onSelectBoard }: BoardListProps) {
 }
 
 function BoardCard({ board, onClick }: { board: Board; onClick: () => void }) {
-  const totalTasks = 
-    board.stats.todo + 
-    board.stats.inProgress + 
-    board.stats.awaitingCheck + 
-    board.stats.verified + 
-    board.stats.failed;
-
-  const completionPct = totalTasks > 0 
-    ? Math.round((board.stats.verified / totalTasks) * 100) 
-    : 0;
+  const totalTasks = board.taskIds.length;
+  const memberCount = board.members.length;
 
   return (
     <button
@@ -76,44 +68,12 @@ function BoardCard({ board, onClick }: { board: Board; onClick: () => void }) {
           {totalTasks} tasks
         </span>
       </div>
-      
-      <p className="text-gray-400 text-sm mb-4 line-clamp-2">
-        {board.description || 'No description'}
-      </p>
 
-      {/* Progress bar */}
-      <div className="mb-4">
-        <div className="flex items-center justify-between text-xs mb-1">
-          <span className="text-gray-400">Progress</span>
-          <span className="text-sui-blue font-medium">{completionPct}%</span>
-        </div>
-        <div className="h-2 bg-gray-700 rounded-full overflow-hidden">
-          <div 
-            className="h-full bg-sui-blue rounded-full transition-all duration-300"
-            style={{ width: `${completionPct}%` }}
-          />
-        </div>
+      <div className="flex items-center gap-3 text-xs text-gray-400 mb-2">
+        <span className="font-mono text-gray-500 truncate">owner: {board.owner}</span>
+        <span className="px-2 py-1 rounded-full bg-gray-800 text-gray-200">{memberCount} members</span>
       </div>
-
-      {/* Stats row */}
-      <div className="flex items-center gap-4 text-xs">
-        <div className="flex items-center gap-1">
-          <span className="w-2 h-2 rounded-full bg-gray-500"></span>
-          <span className="text-gray-400">{board.stats.todo}</span>
-        </div>
-        <div className="flex items-center gap-1">
-          <span className="w-2 h-2 rounded-full bg-amber-500"></span>
-          <span className="text-gray-400">{board.stats.inProgress}</span>
-        </div>
-        <div className="flex items-center gap-1">
-          <span className="w-2 h-2 rounded-full bg-purple-500"></span>
-          <span className="text-gray-400">{board.stats.awaitingCheck}</span>
-        </div>
-        <div className="flex items-center gap-1">
-          <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
-          <span className="text-gray-400">{board.stats.verified}</span>
-        </div>
-      </div>
+      <div className="text-xs text-gray-500">Board v{board.version}</div>
     </button>
   );
 }

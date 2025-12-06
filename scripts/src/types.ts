@@ -1,40 +1,19 @@
 export interface Board {
   id: string;
+  version: number;
   name: string;
-  description: string;
   owner: string;
-  verifier: string;
-  projectWeight: number;
-  stats: BoardStats;
-}
-
-export interface BoardStats {
-  todo: number;
-  inProgress: number;
-  awaitingCheck: number;
-  verified: number;
-  failed: number;
-  overdue: number;
+  members: string[];
+  taskIds: string[];
 }
 
 export interface Task {
   id: string;
-  taskIndex: number;
+  version: number;
+  boardId: string;
+  parent?: string | null;
   title: string;
-  descriptionCipher: number[];
-  category: number;
-  status: number;
-  weightPct: number;
+  description?: string | null;
+  dueDate?: number | null;
   assignees: string[];
-  dueTsMs: number;
-  parentId: number | null;
-  commitHash: number[];
-  proofHash: number[];
-  createdAtMs: number;
-  updatedAtMs: number;
-}
-
-export interface Member {
-  address: string;
-  role: number;
 }

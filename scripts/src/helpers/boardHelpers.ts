@@ -1,33 +1,23 @@
 import { Transaction } from '@mysten/sui/transactions';
 import { suiClient } from '../suiClient';
-import { getSigner, getAddress } from '../signer';
+import { getSigner } from '../signer';
 import { config } from '../env';
+import { extractCreatedObjectId } from './moveParsers';
 
 /**
- * Create a new board with the given name and description
+ * Create a new board with the given name using movelist::board::mint_board
  * @param name - Board name
- * @param description - Board description
- * @param verifierAddress - Address that can verify tasks (optional, defaults to creator)
  * @returns Transaction digest and created board ID
  */
 export async function createBoard(
-  name: string,
-  description: string,
-  verifierAddress?: string
+  name: string
 ): Promise<{ digest: string; boardId: string }> {
   const tx = new Transaction();
-  const userAddress = getAddress();
-  const verifier = verifierAddress || userAddress;
 
-  // Call the create_board function
+  // Call the mint_board function (no description/verifier in current Move module)
   tx.moveCall({
-    target: `${config.packageId}::board::create_board`,
-    arguments: [
-      tx.pure.string(name),
-      tx.pure.string(description),
-      tx.pure.address(verifier),
-      tx.pure.u64(100), // project_weight default
-    ],
+    target: `${config.packageId}::board::mint_board`,
+    arguments: [tx.pure.string(name)],
   });
 
   const signer = getSigner();
@@ -58,21 +48,21 @@ export async function createBoard(
  * Add a member to a board with a specific role
  * @param boardId - The board ID
  * @param memberAddress - Address of the member to add
- * @param role - Role (1 = Contributor, 2 = Admin)
+ * @param adminCapId - BoardAdminCap object ID for auth
  */
 export async function addMember(
   boardId: string,
+  adminCapId: string,
   memberAddress: string,
-  role: number
 ): Promise<{ digest: string }> {
   const tx = new Transaction();
 
   tx.moveCall({
     target: `${config.packageId}::board::add_member`,
     arguments: [
+      tx.object(adminCapId),
       tx.object(boardId),
       tx.pure.address(memberAddress),
-      tx.pure.u8(role),
     ],
   });
 
@@ -89,7 +79,7 @@ export async function addMember(
   console.log(`   Digest: ${result.digest}`);
   console.log(`   Status: ${result.effects?.status.status}`);
   console.log(`   Member: ${memberAddress}`);
-  console.log(`   Role: ${role}`);
+  console.log(`   AdminCap: ${adminCapId}`);
 
   return { digest: result.digest };
 }
