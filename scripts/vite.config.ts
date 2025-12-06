@@ -16,7 +16,7 @@ export default defineConfig({
   },
   preview: {
     host: '0.0.0.0',
-    port: 4173,
-    allowedHosts: ['tomovelist.iseethereaper.com'],
+    port: 3000,
+    allowedHosts: ['tomovelist.iseethereaper.com', 'localhost'],
   },
 });
