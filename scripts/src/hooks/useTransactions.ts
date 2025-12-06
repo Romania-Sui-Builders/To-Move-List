@@ -13,9 +13,7 @@ export function useTransactions() {
       target: `${PACKAGE_ID}::board::mint_board`,
       arguments: [
         tx.pure.string(name),
-        description 
-          ? tx.pure(bcs.option(bcs.string()).serialize(description).toBytes())
-          : tx.pure(bcs.option(bcs.string()).serialize(null).toBytes()),
+        tx.pure(bcs.option(bcs.string()).serialize(description ?? null).toBytes()),
       ],
     });
 
