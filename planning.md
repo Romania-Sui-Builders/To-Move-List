@@ -4,6 +4,27 @@ This is a fully specified build guide for agentic AIs or a 5-person team to deli
 
 ---
 
+## ✅ TypeScript Integration Scripts - COMPLETED
+
+The `/scripts` directory is now fully set up with:
+
+- ✅ TypeScript integration layer with Sui SDK
+- ✅ Helper functions for board and task operations
+- ✅ E2E integration tests
+- ✅ Environment configuration and validation
+- ✅ Complete documentation (README, COMMANDS, QUICKSTART, EXAMPLES)
+
+**Next Steps:**
+1. Install dependencies: `cd scripts && npm install`
+2. Configure `.env` file with your wallet details
+3. Build and deploy Move contracts: `cd ../move/board && sui move build`
+4. Publish to Sui: `sui client publish --gas-budget 100000000`
+5. Run tests: `cd ../../scripts && npm test`
+
+See `/scripts/COMMANDS.md` for detailed step-by-step instructions.
+
+---
+
 ## 1. Product Scope
 
 ### 1.1 Elevator Summary

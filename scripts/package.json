@@ -1,0 +1,44 @@
+{
+  "name": "to-move-list-scripts",
+  "version": "1.0.0",
+  "description": "TypeScript integration scripts and tests for To-Move-List dApp",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "build:css": "pnpm exec tailwindcss -i ./src/styles/tailwind.css -o ./dist/styles/tailwind.css",
+    "build:all": "pnpm run build:css && pnpm run build",
+    "watch:css": "pnpm exec tailwindcss -i ./src/styles/tailwind.css -o ./dist/styles/tailwind.css --watch",
+    "dev": "ts-node --esm src/index.ts",
+    "test": "jest --verbose",
+    "test:watch": "jest --watch",
+    "lint": "eslint src --ext .ts",
+    "format": "prettier --write \"src/**/*.ts\""
+  },
+  "keywords": [
+    "sui",
+    "move",
+    "blockchain",
+    "typescript"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "@mysten/sui": "^1.14.0",
+    "dotenv": "^16.4.5"
+  },
+  "devDependencies": {
+    "@types/jest": "^29.5.12",
+    "@types/node": "^20.11.19",
+    "@typescript-eslint/eslint-plugin": "^7.0.1",
+    "@typescript-eslint/parser": "^7.0.1",
+    "autoprefixer": "^10.4.16",
+    "eslint": "^8.56.0",
+    "jest": "^29.7.0",
+    "postcss": "^8.4.32",
+    "prettier": "^3.2.5",
+    "tailwindcss": "^3.4.0",
+    "ts-jest": "^29.1.2",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.3.3"
+  }
+}
