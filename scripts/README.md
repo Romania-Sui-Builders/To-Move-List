@@ -1,8 +1,8 @@
-# ✅ To-Move-List
+# ✅ Icarus
 
-On-chain task management powered by Sui blockchain. A Notion-style kanban board where tasks, roles, and verification all happen on-chain.
+On-chain task management powered by Sui blockchain. A Notion-style kanban board where tasks, roles, and verification all happen on-chain. Hosted at icarus.iseethereaper.com.
 
-![To-Move-List](https://img.shields.io/badge/Sui-Blockchain-blue?style=flat-square) ![React](https://img.shields.io/badge/React-18-61DAFB?style=flat-square) ![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6?style=flat-square)
+![Icarus](https://img.shields.io/badge/Sui-Blockchain-blue?style=flat-square) ![React](https://img.shields.io/badge/React-18-61DAFB?style=flat-square) ![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6?style=flat-square)
 
 ## ✨ Features
 

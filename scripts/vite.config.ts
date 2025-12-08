@@ -12,11 +12,11 @@ export default defineConfig({
     port: 3000,
     open: true,
     host: '0.0.0.0',
-    allowedHosts: ['tomovelist.iseethereaper.com'],
+    allowedHosts: ['icarus.iseethereaper.com'],
   },
   preview: {
     host: '0.0.0.0',
     port: 3000,
-    allowedHosts: ['tomovelist.iseethereaper.com', 'localhost'],
+    allowedHosts: ['icarus.iseethereaper.com', 'localhost'],
   },
 });
